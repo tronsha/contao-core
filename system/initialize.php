@@ -100,10 +100,19 @@ catch (UnresolvableDependenciesException $e)
  */
 function _swiftmailer_init()
 {
-	require TL_ROOT . '/system/config/swiftmailer.php';
+	require __DIR__ . '/config/swiftmailer.php';
 }
 
-require_once TL_ROOT . '/vendor/autoload.php';
+require_once __DIR__ . '/autoload.php';
+
+
+/**
+ * Boot the Symfony kernel
+ */
+require_once __DIR__ . '/bootstrap.php.cache';
+require_once __DIR__ . '/AppKernel.php';
+$kernel = new AppKernel('prod', false);
+$kernel->boot();
 
 
 /**

@@ -1,0 +1,11 @@
+imports:
+    - { resource: parameters.yml }
+
+framework:
+    test: ~
+    translator: { fallback: "%locale%" }
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
+    secret: "%secret%"
+    default_locale: "%locale%"
