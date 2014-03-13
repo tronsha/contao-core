@@ -39,6 +39,8 @@ class ContaoBundle extends Bundle
      */
     public function build(ContainerBuilder $container)
     {
+        $container->setParameter('kernel.secret', $GLOBALS['TL_CONFIG']['encryptionKey']);
+
         if ($container->getParameter('kernel.charset') === '') {
             $container->setParameter('kernel.charset', strtoupper($GLOBALS['TL_CONFIG']['characterSet']));
         }
