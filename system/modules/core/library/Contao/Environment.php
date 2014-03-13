@@ -37,12 +37,6 @@ class Environment
 	 */
 	protected static $objInstance;
 
-	/**
-	 * Cache
-	 * @var array
-	 */
-	protected static $arrCache = array();
-
 
 	/**
 	 * Return an environment variable
@@ -53,35 +47,16 @@ class Environment
 	 */
 	public static function get($strKey)
 	{
-		if (isset(static::$arrCache[$strKey]))
-		{
-			return static::$arrCache[$strKey];
-		}
-
 		if (in_array($strKey, get_class_methods('Environment')))
 		{
-			static::$arrCache[$strKey] = static::$strKey();
+			return static::$strKey();
 		}
 		else
 		{
 			$arrChunks = preg_split('/([A-Z][a-z]*)/', $strKey, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 			$strServerKey = strtoupper(implode('_', $arrChunks));
-			static::$arrCache[$strKey] = $_SERVER[$strServerKey];
+			return $_SERVER[$strServerKey];
 		}
-
-		return static::$arrCache[$strKey];
-	}
-
-
-	/**
-	 * Set an environment variable
-	 *
-	 * @param string $strKey   The variable name
-	 * @param mixed  $varValue The variable value
-	 */
-	public static function set($strKey, $varValue)
-	{
-		static::$arrCache[$strKey] = $varValue;
 	}
 
 
@@ -92,7 +67,8 @@ class Environment
 	 */
 	protected static function scriptFilename()
 	{
-		return str_replace('//', '/', str_replace('\\', '/', (PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi' || PHP_SAPI == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ? ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) : ($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME'])));
+		$sapi = $GLOBALS['PHP_SAPI_TEST'] ?: PHP_SAPI;
+		return str_replace('//', '/', str_replace('\\', '/', ($sapi == 'cgi' || $sapi == 'isapi' || $sapi == 'cgi-fcgi' || $sapi == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ? ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) : ($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME'])));
 	}
 
 
@@ -103,7 +79,8 @@ class Environment
 	 */
 	protected static function scriptName()
 	{
-		return (PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi' || PHP_SAPI == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME'] ? $_SERVER['ORIG_SCRIPT_NAME'] : $_SERVER['SCRIPT_NAME']);
+		$sapi = $GLOBALS['PHP_SAPI_TEST'] ?: PHP_SAPI;
+		return ($sapi == 'cgi' || $sapi == 'isapi' || $sapi == 'cgi-fcgi' || $sapi == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME'] ? $_SERVER['ORIG_SCRIPT_NAME'] : $_SERVER['SCRIPT_NAME']);
 	}
 
 
@@ -625,4 +602,15 @@ class Environment
 
 		return static::$objInstance;
 	}
+
+
+	/**
+	 * Set an environment variable
+	 *
+	 * @param string $strKey   The variable name
+	 * @param mixed  $varValue The variable value
+	 *
+	 * @deprecated The internal cache has been removed
+	 */
+	public static function set($strKey, $varValue) {}
 }

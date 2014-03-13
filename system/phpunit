@@ -1,0 +1,7 @@
+#!/usr/bin/env php
+<?php
+
+define('TL_MODE', 'FE');
+require_once __DIR__ . '/initialize.php';
+
+PHPUnit_TextUI_Command::main();
