@@ -39,6 +39,13 @@ class Environment
 
 
 	/**
+	 * Request object
+	 * @var \Symfony\Component\HttpFoundation\Request
+	 */
+	protected static $objRequest;
+
+
+	/**
 	 * Return an environment variable
 	 *
 	 * @param string $strKey The variable name
@@ -47,15 +54,15 @@ class Environment
 	 */
 	public static function get($strKey)
 	{
-		if (in_array($strKey, get_class_methods('Environment')))
+		if (in_array($strKey, get_class_methods(__CLASS__)))
 		{
 			return static::$strKey();
 		}
 		else
 		{
 			$arrChunks = preg_split('/([A-Z][a-z]*)/', $strKey, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
-			$strServerKey = strtoupper(implode('_', $arrChunks));
-			return $_SERVER[$strServerKey];
+
+			return static::getRequest()->server->get(strtoupper(implode('_', $arrChunks)));
 		}
 	}
 
@@ -67,8 +74,7 @@ class Environment
 	 */
 	protected static function scriptFilename()
 	{
-		$sapi = $GLOBALS['PHP_SAPI_TEST'] ?: PHP_SAPI;
-		return str_replace('//', '/', str_replace('\\', '/', ($sapi == 'cgi' || $sapi == 'isapi' || $sapi == 'cgi-fcgi' || $sapi == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) ? ($_SERVER['ORIG_PATH_TRANSLATED'] ? $_SERVER['ORIG_PATH_TRANSLATED'] : $_SERVER['PATH_TRANSLATED']) : ($_SERVER['ORIG_SCRIPT_FILENAME'] ? $_SERVER['ORIG_SCRIPT_FILENAME'] : $_SERVER['SCRIPT_FILENAME'])));
+		return static::get('documentRoot') . static::scriptName();
 	}
 
 
@@ -79,8 +85,7 @@ class Environment
 	 */
 	protected static function scriptName()
 	{
-		$sapi = $GLOBALS['PHP_SAPI_TEST'] ?: PHP_SAPI;
-		return ($sapi == 'cgi' || $sapi == 'isapi' || $sapi == 'cgi-fcgi' || $sapi == 'fpm-fcgi') && ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) ? ($_SERVER['ORIG_PATH_INFO'] ? $_SERVER['ORIG_PATH_INFO'] : $_SERVER['PATH_INFO']) : ($_SERVER['ORIG_SCRIPT_NAME'] ? $_SERVER['ORIG_SCRIPT_NAME'] : $_SERVER['SCRIPT_NAME']);
+		return static::getRequest()->getScriptName();
 	}
 
 
@@ -105,41 +110,7 @@ class Environment
 	 */
 	protected static function documentRoot()
 	{
-		$strDocumentRoot = '';
-		$arrUriSegments = array();
-		$scriptName = static::get('scriptName');
-		$scriptFilename = static::get('scriptFilename');
-
-		// Fallback to DOCUMENT_ROOT if SCRIPT_FILENAME and SCRIPT_NAME point to different files
-		if (basename($scriptName) != basename($scriptFilename))
-		{
-			return str_replace('//', '/', str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])));
-		}
-
-		if (substr($scriptFilename, 0, 1) == '/')
-		{
-			$strDocumentRoot = '/';
-		}
-
-		$arrSnSegments = explode('/', strrev($scriptName));
-		$arrSfnSegments = explode('/', strrev($scriptFilename));
-
-		foreach ($arrSfnSegments as $k=>$v)
-		{
-			if ($arrSnSegments[$k] != $v)
-			{
-				$arrUriSegments[] = $v;
-			}
-		}
-
-		$strDocumentRoot .= strrev(implode('/', $arrUriSegments));
-
-		if (strlen($strDocumentRoot) < 2)
-		{
-			$strDocumentRoot = substr($scriptFilename, 0, -(strlen($strDocumentRoot) + 1));
-		}
-
-		return str_replace('//', '/', str_replace('\\', '/', realpath($strDocumentRoot)));
+		return str_replace(TL_PATH, '', TL_ROOT);
 	}
 
 
@@ -150,14 +121,7 @@ class Environment
 	 */
 	protected static function requestUri()
 	{
-		if (!empty($_SERVER['REQUEST_URI']))
-		{
-			return $_SERVER['REQUEST_URI'];
-		}
-		else
-		{
-			return '/' . preg_replace('/^\//', '', static::get('scriptName')) . (!empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '');
-		}
+		return static::getRequest()->getRequestUri();
 	}
 
 
@@ -212,7 +176,7 @@ class Environment
 	 */
 	protected static function httpAcceptEncoding()
 	{
-		return array_values(array_unique(explode(',', strtolower($_SERVER['HTTP_ACCEPT_ENCODING']))));
+		return static::getRequest()->getEncodings();
 	}
 
 
@@ -237,21 +201,7 @@ class Environment
 	 */
 	protected static function httpHost()
 	{
-		if (!empty($_SERVER['HTTP_HOST']))
-		{
-			$host = $_SERVER['HTTP_HOST'];
-		}
-		else
-		{
-			$host = $_SERVER['SERVER_NAME'];
-
-			if ($_SERVER['SERVER_PORT'] != 80)
-			{
-				$host .= ':' . $_SERVER['SERVER_PORT'];
-			}
-		}
-
-		return preg_replace('/[^A-Za-z0-9\[\]\.:-]/', '', $host);
+		return static::getRequest()->getHost();
 	}
 
 
@@ -458,7 +408,7 @@ class Environment
 	 */
 	protected static function isAjaxRequest()
 	{
-		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
+		return static::getRequest()->isXmlHttpRequest();
 	}
 
 
@@ -538,6 +488,29 @@ class Environment
 		$return->mobile   = $mobile;
 
 		return $return;
+	}
+
+
+	/**
+	 * Get the Symfony request object
+	 *
+	 * @return \Symfony\Component\HttpFoundation\Request
+	 */
+	public static function getRequest()
+	{
+		if (static::$objRequest === null)
+		{
+			global $container;
+
+			if ($container === null || ($request = $container->get('request_stack')->getCurrentRequest()) === null)
+			{
+                $request = \Symfony\Component\HttpFoundation\Request::createFromGlobals();
+			}
+
+			static::$objRequest = $request;
+		}
+
+		return static::$objRequest;
 	}
 
 
