@@ -1,0 +1,17 @@
+language: php
+
+php:
+    - "5.3"
+    - "5.4"
+    - "5.5"
+    - "5.6"
+
+before_script:
+    - touch ./system/config/localconfig.php
+    - echo -e "<?php\n\nreturn '/contao/core';\n" > ./system/config/pathconfig.php
+
+install:
+    - composer install --prefer-dist --dev
+
+script:
+    - ./vendor/bin/phpunit -c system/phpunit.xml.dist
