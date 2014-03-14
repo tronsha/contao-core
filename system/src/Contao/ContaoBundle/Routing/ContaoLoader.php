@@ -35,30 +35,40 @@ class ContaoLoader extends Loader
      */
     public function load($resource, $type = null)
     {
-        $pattern = '/{alias}';
+        $routes = new RouteCollection();
 
         $defaults = array(
-            '_controller' => 'ContaoBundle:Frontend:index',
+            '_controller' => 'ContaoBundle:Frontend:index'
         );
 
-        $requirements = array(
-            'alias' => '.*',
-        );
+        $pattern = '/{alias}';
+        $require = array('alias' => '.*');
 
-        if ($GLOBALS['TL_CONFIG']['urlSuffix'] != '') {
+        $suffix = substr($GLOBALS['TL_CONFIG']['urlSuffix'], 1);
+
+        // URL suffix
+        if ($suffix != '') {
             $pattern .= '.{_format}';
-            $requirements['_format'] = substr($GLOBALS['TL_CONFIG']['urlSuffix'], 1);
-            $defaults['_format'] = substr($GLOBALS['TL_CONFIG']['urlSuffix'], 1);
+
+            $require['_format']  = $suffix;
+            $defaults['_format'] = $suffix;
         }
 
-        if ($GLOBALS['TL_CONFIG']['addLanguageToUrl']) {
-            $pattern = '/{_locale}' . $pattern;
+        // Add language to URL
+        if ($GLOBALS['TL_CONFIG']['addLanguageToUrl'] != '') {
+            $require['_locale'] = '[a-z]{2}(\-[A-Z]{2})?';
+
+            $route = new Route('/{_locale}' . $pattern, $defaults, $require);
+            $routes->add('contao_locale', $route);
         }
 
-        $routes = new RouteCollection();
-        $route  = new Route($pattern, $defaults, $requirements);
+        // Default route
+        $route = new Route($pattern, $defaults, $require);
+        $routes->add('contao_default', $route);
 
-        $routes->add('contao_frontend', $route);
+        // Empty domain (root)
+        $route = new Route('/', $defaults);
+        $routes->add('contao_root', $route);
 
         return $routes;
     }
