@@ -24,6 +24,15 @@ define('TL_ROOT', dirname(__DIR__));
 
 
 /**
+ * Make sure TL_MODE is defined, e.g. for unit tests
+ */
+if (!defined('TL_MODE'))
+{
+	define('TL_MODE', 'FE');
+}
+
+
+/**
  * Define the login status constants in the back end (see #4099, #5279)
  */
 if (TL_MODE == 'BE')
@@ -96,14 +105,25 @@ catch (UnresolvableDependenciesException $e)
 
 
 /**
- * Register the SwiftMailer and vendor autoloaders
+ * Include the Composer autoloader
  */
-function _swiftmailer_init()
-{
-	require __DIR__ . '/config/swiftmailer.php';
-}
-
 require_once __DIR__ . '/autoload.php';
+
+
+/**
+ * Override some SwiftMailer defaults
+ */
+Swift::init(function()
+{
+	$preferences = Swift_Preferences::getInstance();
+
+	if (!$GLOBALS['TL_CONFIG']['useFTP'])
+	{
+		$preferences->setTempDir(TL_ROOT . '/system/tmp')->setCacheType('disk');
+	}
+
+	$preferences->setCharset($GLOBALS['TL_CONFIG']['characterSet']);
+});
 
 
 /**
