@@ -7,8 +7,9 @@ php:
     - "5.6"
 
 before_script:
-    - touch ./system/config/localconfig.php
+    - composer self-update
     - echo -e "<?php\n\nreturn '/contao/core';\n" > ./system/config/pathconfig.php
+    - touch ./system/config/localconfig.php
 
 install:
     - composer install --prefer-dist --dev
