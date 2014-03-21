@@ -134,6 +134,11 @@ class Environment
 	 */
 	protected static function httpAcceptLanguage()
 	{
+		if (!isset($_SERVER['HTTP_ACCEPT_LANGUAGE']))
+		{
+			return array();
+		}
+
 		$arrAccepted = array();
 		$arrLanguages = array();
 
@@ -212,7 +217,12 @@ class Environment
 	 */
 	protected static function httpXForwardedHost()
 	{
-		return preg_replace('/[^A-Za-z0-9\[\]\.:-]/', '', $_SERVER['HTTP_X_FORWARDED_HOST']);
+		if (isset($_SERVER['HTTP_X_FORWARDED_HOST']))
+		{
+			return preg_replace('/[^A-Za-z0-9\[\]\.:-]/', '', $_SERVER['HTTP_X_FORWARDED_HOST']);
+		}
+
+		return '';
 	}
 
 
@@ -223,7 +233,17 @@ class Environment
 	 */
 	protected static function ssl()
 	{
-		return ($_SERVER['SSL_SESSION_ID'] || $_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1);
+		if (isset($_SERVER['SSL_SESSION_ID']))
+		{
+			return true;
+		}
+
+		if (isset($_SERVER['HTTPS']))
+		{
+			return ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1);
+		}
+
+		return false;
 	}
 
 

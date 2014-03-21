@@ -63,8 +63,11 @@ require TL_ROOT . '/system/helper/exception.php';
 /**
  * Set the error and exception handler
  */
-@set_error_handler('__error');
-@set_exception_handler('__exception');
+if (PHP_SAPI != 'cli')
+{
+	@set_error_handler('__error');
+	@set_exception_handler('__exception');
+}
 
 
 /**
