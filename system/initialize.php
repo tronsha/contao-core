@@ -110,7 +110,7 @@ catch (UnresolvableDependenciesException $e)
 /**
  * Include the Composer autoloader
  */
-require_once __DIR__ . '/autoload.php';
+require_once TL_ROOT . '/app/autoload.php';
 
 
 /**
@@ -132,8 +132,8 @@ Swift::init(function()
 /**
  * Boot the Symfony kernel
  */
-require_once __DIR__ . '/bootstrap.php.cache';
-require_once __DIR__ . '/AppKernel.php';
+require_once TL_ROOT . '/app/bootstrap.php.cache';
+require_once TL_ROOT . '/app/AppKernel.php';
 $kernel = new AppKernel('prod', false);
 $kernel->boot();
 

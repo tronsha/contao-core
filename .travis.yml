@@ -15,4 +15,4 @@ install:
     - composer install --prefer-dist --dev
 
 script:
-    - ./vendor/bin/phpunit -c system/phpunit.xml.dist
+    - ./vendor/bin/phpunit -c app/phpunit.xml.dist

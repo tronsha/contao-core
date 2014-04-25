@@ -13,6 +13,9 @@ nbproject/
 # Contao
 /.htaccess
 /*.xml
+/app/cache/*
+/app/config/parameters.yml
+/app/logs/*
 /contao/update.phar.php
 /files/*
 /assets/css/*
@@ -25,7 +28,6 @@ nbproject/
 /system/config/langconfig.php
 /system/config/localconfig.php
 /system/config/pathconfig.php
-/system/config/parameters.yml
 /system/cron/cron.txt
 /system/logs/*
 /system/tmp/*

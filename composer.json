@@ -20,10 +20,7 @@
 		"phpunit/phpunit": "*"
 	},
 	"autoload": {
-		"psr-0": { "Contao\\": "system/src/" }
-	},
-	"extra": {
-		"symfony-app-dir": "system"
+		"psr-0": { "Contao\\": "src/" }
 	},
 	"scripts": {
 		"post-install-cmd": [
